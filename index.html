@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Blackwood Cabin | Survival Log</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #050505;       
+            --bg-panel: #110e0e;      
+            --bg-card: #1a1515;       
+            --brand-neon: #dc2626;    
+            --accent-amber: #f59e0b;  
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #000; 
+            color: #e2e8f0;
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-typewriter { font-family: 'Courier Prime', monospace; }
+        .font-display { font-family: 'Cinzel', serif; }
+
+        /* Mobile App Container Frame */
+        #mobile-app {
+            width: 100%; max-width: 430px; 
+            height: 100vh; max-height: 932px;
+            background-color: var(--bg-base);
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 50px rgba(220, 38, 38, 0.15);
+            background-image: radial-gradient(circle at center, #1a1515 0%, #000000 80%);
+        }
+
+        /* Layout */
+        header { flex-shrink: 0; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); z-index: 50; border-bottom: 1px solid var(--bg-card); }
+        main { flex-grow: 1; overflow-y: auto; padding: 1.5rem; position: relative; }
+
+        /* Progress Bar */
+        .progress-track { width: 100%; height: 4px; background: var(--bg-card); overflow: hidden; margin-top: 10px; }
+        .progress-fill { height: 100%; background: var(--brand-neon); transition: width 0.3s ease; box-shadow: 0 0 10px rgba(220, 38, 38, 0.6); }
+
+        /* Cards & Buttons */
+        .question-card { background: var(--bg-panel); border: 1px solid rgba(220,38,38,0.2); border-radius: 8px; padding: 1.5rem; animation: slideIn 0.3s ease forwards; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        .opt-btn { width: 100%; text-align: left; background: var(--bg-base); border: 1px solid #333; padding: 1rem; border-radius: 4px; margin-bottom: 0.75rem; font-family: 'Courier Prime', monospace; font-weight: bold; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .opt-btn:active { transform: scale(0.98); }
+        .opt-btn.selected-correct { border-color: var(--accent-amber); background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); }
+        .opt-btn.selected-error { border-color: var(--brand-neon); background: rgba(220, 38, 38, 0.1); color: var(--brand-neon); }
+
+        .btn-primary { width: 100%; background: rgba(220,38,38,0.1); color: var(--brand-neon); border: 1px solid var(--brand-neon); padding: 1rem; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: 900; text-transform: uppercase; text-align: center; transition: all 0.2s; }
+        .btn-primary:active { background: var(--brand-neon); color: #fff; transform: scale(0.98); }
+
+        /* Input specific */
+        .type-input { width: 100%; background: #e5e5f7; border: 1px solid #111; color: #111; padding: 1rem; border-radius: 4px; font-family: 'Courier Prime', monospace; text-align: center; margin-bottom: 1rem; font-size: 1.1rem; font-weight: bold;}
+        .type-input:focus { outline: none; border-color: var(--brand-neon); box-shadow: 0 0 15px rgba(220,38,38,0.3); }
+        .type-input.error { border-color: var(--brand-neon); color: var(--brand-neon); animation: shake 0.4s; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        .hide { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-app">
+        <!-- Header -->
+        <header class="p-4 flex flex-col">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-red-900/30 border border-red-500/50 flex items-center justify-center"><i class="fas fa-tree text-red-500 text-sm"></i></div>
+                    <div>
+                        <h1 class="text-sm font-bold leading-tight font-display text-white">Blackwood Cabin</h1>
+                        <p class="text-[10px] text-red-500 font-typewriter uppercase">Survival Log</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span id="q-counter" class="text-xs font-typewriter text-slate-400 font-bold tracking-widest">01/15</span>
+                </div>
+            </div>
+            <div class="progress-track">
+                <div id="progress" class="progress-fill" style="width: 0%;"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="app-main" class="flex flex-col justify-center">
+            
+            <div id="screen-welcome" class="text-center question-card border-t-2 border-red-600">
+                <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4 border border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+                    <i class="fas fa-book-dead text-2xl text-red-600"></i>
+                </div>
+                <h2 class="text-xl font-bold mb-2 font-display text-white">Review the Tapes</h2>
+                <p class="text-sm text-slate-400 mb-6 leading-relaxed font-typewriter">To survive the night, you must master the Narrative Tenses and Relative Clauses. Fix the errors in the cabin's logs.</p>
+                <div class="text-left bg-black p-3 rounded mb-6 border border-slate-800">
+                    <p class="text-xs font-typewriter text-amber-500"><i class="fas fa-check mr-2"></i> Fix: "I was sleeping when..."</p>
+                    <p class="text-xs font-typewriter text-red-500 mt-2"><i class="fas fa-skull mr-2"></i> Bug: "I slept when..."</p>
+                </div>
+                <button onclick="startGame()" class="btn-primary">Open Diary</button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="screen-quiz" class="hide flex flex-col justify-center h-full"></div>
+
+            <!-- Result Screen -->
+            <div id="screen-result" class="hide text-center question-card border-t-2 border-amber-500">
+                <div class="w-20 h-20 bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+                    <i class="fas fa-sun text-4xl text-amber-500"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2 font-display">Morning Came</h2>
+                <p class="text-sm text-slate-400 mb-6 font-typewriter">You successfully patched the horror logs and survived the night.</p>
+                
+                <div class="bg-black p-4 rounded-lg border border-slate-800 mb-6">
+                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest font-typewriter mb-1">Sanity Level</p>
+                    <p id="final-score" class="text-3xl font-bold text-amber-500 font-typewriter">100%</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const exercises = [
+            { type: 'ab', context: 'The Storm', bug: 'I read when the lights went out.', clean: 'I was reading when the lights went out.' },
+            { type: 'ab', context: 'The Door', bug: 'The man which knocked disappeared.', clean: 'The man who knocked disappeared.' },
+            { type: 'input', context: 'The Cellar', corrupted: '[downstairs / we / walking / were] when we heard it.', expected: 'we were walking', hint: 'Reorder the words' },
+            { type: 'input', context: 'The Typewriter', corrupted: 'The cabin is the place [which / who / where] it happened.', expected: 'where', hint: 'Type the relative pronoun' },
+            { type: 'ab', context: 'The Flashlight', bug: 'While I looked for the flashlight, the window broke.', clean: 'While I was looking for the flashlight, the window broke.' },
+            { type: 'ab', context: 'The Book', bug: 'The diary, who was old, had blood on it.', clean: 'The diary, which was old, had blood on it.' },
+            { type: 'input', context: 'The Escape', corrupted: 'They [were / hide] in the closet when the door opened.', expected: 'were hiding', hint: 'Fix the verb tense' },
+            { type: 'input', context: 'The Footsteps', corrupted: 'The creature [who / which / where] was outside had no face.', expected: 'which', hint: 'Type the relative pronoun' },
+            { type: 'ab', context: 'The Chase', bug: 'We ran while the monster chased us.', clean: 'We were running while the monster was chasing us.' },
+            { type: 'ab', context: 'The Radio', bug: 'The radio, where was broken, started playing music.', clean: 'The radio, which was broken, started playing music.' },
+            { type: 'input', context: 'The Discovery', corrupted: 'I found a tape [who / which / where] explained everything.', expected: 'which', hint: 'Type the relative pronoun' },
+            { type: 'input', context: 'The Call', corrupted: 'While I [was / talk] on the phone, the line died.', expected: 'was talking', hint: 'Fix the verb tense' },
+            { type: 'ab', context: 'The Stranger', bug: 'The person which was outside was gone.', clean: 'The person who was outside was gone.' },
+            { type: 'ab', context: 'The Nightmare', bug: 'I slept when the nightmare began.', clean: 'I was sleeping when the nightmare began.' },
+            { type: 'input', context: 'The End', corrupted: 'The police arrived at the cabin [who / which / where] we were hiding.', expected: 'where', hint: 'Type the relative pronoun' }
+        ];
+
+        let state = { current: 0, errors: 0 };
+
+        function startGame() {
+            document.getElementById('screen-welcome').classList.add('hide');
+            document.getElementById('screen-quiz').classList.remove('hide');
+            renderQuestion();
+        }
+
+        function updateProgress() {
+            const perc = (state.current / exercises.length) * 100;
+            document.getElementById('progress').style.width = perc + '%';
+            document.getElementById('q-counter').innerText = `${String(state.current + 1).padStart(2, '0')}/${exercises.length}`;
+        }
+
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) { let randId = Math.floor(Math.random() * curId); curId -= 1; let tmp = array[curId]; array[curId] = array[randId]; array[randId] = tmp; }
+            return array;
+        }
+
+        function renderQuestion() {
+            if (state.current >= exercises.length) return endHomework();
+            
+            updateProgress();
+            const ex = exercises[state.current];
+            const container = document.getElementById('screen-quiz');
+            
+            let html = `
+                <div class="question-card" id="q-card">
+                    <p class="text-[10px] text-red-500 font-bold uppercase tracking-widest font-typewriter mb-4"><i class="fas fa-folder-open mr-2"></i>${ex.context}</p>
+            `;
+
+            if (ex.type === 'ab') {
+                const opts = shuffleArray([
+                    { text: ex.clean, isCorrect: true },
+                    { text: ex.bug, isCorrect: false }
+                ]);
+
+                html += `
+                    <h2 class="text-lg font-bold text-white mb-6 font-display">Select the correct lore:</h2>
+                    <div class="space-y-3" id="ab-opts">
+                        <button onclick="handleAB(this, ${opts[0].isCorrect})" class="opt-btn"><span>${opts[0].text}</span><i class="fas fa-circle text-slate-700 text-xs icon-status"></i></button>
+                        <button onclick="handleAB(this, ${opts[1].isCorrect})" class="opt-btn"><span>${opts[1].text}</span><i class="fas fa-circle text-slate-700 text-xs icon-status"></i></button>
+                    </div>
+                `;
+            } else if (ex.type === 'input') {
+                html += `
+                    <h2 class="text-lg font-bold text-white mb-2 font-display">Fix the corrupted entry:</h2>
+                    <p class="text-red-500 font-typewriter text-sm mb-6 bg-black p-4 rounded text-center border border-red-900">${ex.corrupted}</p>
+                    <input type="text" id="type-ans" class="type-input" placeholder="${ex.hint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <button id="btn-submit" onclick="handleInput('${ex.expected}')" class="btn-primary">Write</button>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            if (ex.type === 'input') {
+                const inputEl = document.getElementById('type-ans');
+                inputEl.focus();
+                inputEl.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('btn-submit').click(); });
+            }
+        }
+
+        function handleAB(btn, isCorrect) {
+            const buttons = document.getElementById('ab-opts').querySelectorAll('button');
+            buttons.forEach(b => { b.onclick = null; b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            const icon = btn.querySelector('.icon-status');
+
+            if (isCorrect) {
+                btn.classList.add('selected-correct');
+                icon.className = 'fas fa-check-circle text-amber-500 text-lg icon-status';
+                setTimeout(nextQuestion, 600);
+            } else {
+                btn.classList.add('selected-error');
+                icon.className = 'fas fa-skull text-red-500 text-lg icon-status';
+                state.errors++;
+                buttons.forEach(b => {
+                    if(!b.classList.contains('selected-error')) {
+                        b.classList.add('selected-correct'); b.style.opacity = '1';
+                        b.querySelector('.icon-status').className = 'fas fa-check-circle text-amber-500 text-lg icon-status';
+                    }
+                });
+                setTimeout(nextQuestion, 1500);
+            }
+        }
+
+        function handleInput(expected) {
+            const input = document.getElementById('type-ans');
+            const val = input.value.trim().toLowerCase();
+            const btn = document.getElementById('btn-submit');
+
+            if (val === expected.toLowerCase()) {
+                input.style.borderColor = 'var(--accent-amber)';
+                input.style.backgroundColor = 'var(--accent-amber)';
+                input.style.color = '#000';
+                btn.style.background = 'var(--accent-amber)';
+                btn.style.borderColor = 'var(--accent-amber)';
+                btn.style.color = '#000';
+                btn.innerHTML = '<i class="fas fa-check"></i> Patched';
+                setTimeout(nextQuestion, 600);
+            } else {
+                input.classList.remove('error');
+                void input.offsetWidth; 
+                input.classList.add('error');
+                input.value = '';
+                input.placeholder = "Try again...";
+                state.errors++;
+            }
+        }
+
+        function nextQuestion() { state.current++; renderQuestion(); }
+
+        function endHomework() {
+            document.getElementById('screen-quiz').classList.add('hide');
+            document.getElementById('screen-result').classList.remove('hide');
+            document.getElementById('progress').style.width = '100%';
+            document.getElementById('q-counter').innerText = 'DONE';
+
+            const accuracy = Math.max(0, 100 - (state.errors * 5));
+            const scoreEl = document.getElementById('final-score');
+            scoreEl.innerText = `${accuracy}%`;
+            
+            if(accuracy < 70) scoreEl.className = "text-3xl font-bold text-red-500 font-typewriter";
+        }
+    </script>
+</body>
+</html>
